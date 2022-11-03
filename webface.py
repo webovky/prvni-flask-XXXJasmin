@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from distutils.log import error
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 import functools
 
 # from werkzeug.security import generate_password_hash, check_password_hash
@@ -41,4 +42,43 @@ def abc():
 
 @app.route("/malina/", methods=['GET', 'POST'])
 def malina():
-    return render_template('malina.html')
+    if 'uzivatel' not in session:
+        flash('Nejsi přihlášen, tato stránka vyžaduje přihlášení.', error)
+        return redirect(url_for('login'))
+
+    hmotnost = request.args.get('hmotnost')
+    vyska = request.args.get('vyska')
+
+    print(hmotnost, vyska)    
+    if hmotnost and vyska:
+        try:
+            hmotnost = float(hmotnost)
+            vyska=float(vyska)
+            bmi = hmotnost/(0.01*vyska)**2
+        except (ZeroDivisionError, ValueError):
+            bmi=None
+            err="Je třba zadat dvě nenulová čísla"
+    else:
+        bmi = None
+
+    return render_template('malina.html', bmi=bmi)
+
+@app.route("/login/", methods=["GET"])
+def login():
+    jméno=request.args.get("jméno")
+    heslo=request.args.get("heslo")
+    print(jméno,heslo)
+    return render_template('login.html')
+
+@app.route("/login/", methods=["POST"])
+def login_post():
+    jméno=request.form.get("jméno")
+    heslo=request.form.get("heslo")
+    if jméno=="jasmina" and heslo=="psychoska":
+        session["uzivatel"] = jméno
+    return redirect(url_for('login'))
+
+@app.route("/logout/", methods=["GET", "POST"])
+def logout():
+    session.pop("uživatel", None)
+    return redirect(url_for('login'))
