@@ -59,5 +59,21 @@ footer {
     background-color: lightblue;
 }
 
+.flash {
+  display: block;
+  position: absolute;
+  top: 0%;
+  width: 30%;
+  border: 2px orange solid;
+  border-radius: 20px;
+  padding: 2ex;
+  font-weight: bold;
+  background-color: red;
+}
 
+.error{
+  background-color: red;
+  color: black;
+}
+ 
 /*# sourceMappingURL=styles.css.map */

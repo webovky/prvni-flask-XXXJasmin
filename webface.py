@@ -43,8 +43,8 @@ def abc():
 @app.route("/malina/", methods=['GET', 'POST'])
 def malina():
     if 'uzivatel' not in session:
-        flash('Nejsi přihlášen, tato stránka vyžaduje přihlášení.', error)
-        return redirect(url_for('login'))
+        flash('Nejsi přihlášen, tato stránka vyžaduje přihlášení.', 'error')
+        return redirect(url_for('login', page = request.full_path))
 
     hmotnost = request.args.get('hmotnost')
     vyska = request.args.get('vyska')
@@ -74,11 +74,19 @@ def login():
 def login_post():
     jméno=request.form.get("jméno")
     heslo=request.form.get("heslo")
+    page = request.args.get('page')
     if jméno=="jasmina" and heslo=="psychoska":
+        flash('Jsi přihlášen!', 'message')
         session["uzivatel"] = jméno
+        if page:
+            return redirect(page)
+    else:
+        flash('Nesprávné přihlašovací údaje', 'error')
+    if page:
+        return redirect(url_for("login", page=page))
     return redirect(url_for('login'))
 
 @app.route("/logout/", methods=["GET", "POST"])
 def logout():
     session.pop("uživatel", None)
-    return redirect(url_for('login'))
+    return redirect(url_for('index'))

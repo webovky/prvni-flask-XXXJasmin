@@ -25,8 +25,12 @@
 
 </p>
 {%for category,message in get_flashed_messages(with_categories=true)%}
-<p class="flash {{category}} ">{{message}}</p>
+<p class="flash {{category}} ">
+<button id="hide">X</button>
+ {{message}}
+ </p>
 {% endfor %}
+
   <nav>
   <p><img src="{{ url_for('static', filename='flask-icon.png') }}" /></p>
   <ul>
@@ -75,6 +79,15 @@ Užitečné odkazy:
 
 
 
+<script>
 
+function hide() {
+  this.style.display = "none";                                                                          
+}
+
+var tlacitka = document.getElementsByClassName('hide');
+document.getElementById('abc').onclick = hide
+
+</script>
 </body>
 </html>
