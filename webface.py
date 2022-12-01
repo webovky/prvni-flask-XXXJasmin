@@ -1,6 +1,11 @@
 from distutils.log import error
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import functools
+import sqlite3 
+from werkzeug.security import generate_password_hash, check_password_hash
+
+
+from mysqlite import SQLite
 
 # from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -9,11 +14,8 @@ app.secret_key = b"totoj e zceLa n@@@hodny retezec nejlep os.urandom(24)"
 app.secret_key = b"x6\x87j@\xd3\x88\x0e8\xe8pM\x13\r\xafa\x8b\xdbp\x8a\x1f\xd41\xb8"
 
 
+
 slova = ("Super", "Perfekt", "Úža", "Flask")
-
-import sqlite3
-conn = sqlite3.connect('data.db')
-
 
 def prihlasit(function):
     @functools.wraps(function)
@@ -79,16 +81,14 @@ def login_post():
     heslo=request.form.get("heslo")
     page = request.args.get('page')
 
-    conn = sqlite3.connect('data.db')
-    cur = conn.cursor()
-    cur.execute('SELECT passwd FROM user WHERE login = ?', [jmeno])
-    ans= cur.fetchall()[0][0]
-    print(ans)
-
+    with SQLite('data.db') as cur:
+        cur.execute('SELECT passwd FROM user WHERE login = ?', [jmeno])
+        ans= cur.fetchall()[0][0]
+        print(ans)
 
     if ans and ans[0][0] ==heslo:
         flash('Jsi přihlášen!', 'message')
-        session["uzivatel"] = jméno
+        session["uzivatel"] = jmeno
         if page:
             return redirect(page)
     else:
@@ -101,3 +101,35 @@ def login_post():
 def logout():
     session.pop("uživatel", None)
     return redirect(url_for('index'))
+
+
+
+@app.route("/registrace/", methods=['GET'])
+def registrace():
+    return render_template("registrace.html")
+
+@app.route("/registrace/", methods=['POST'])
+def registrace():
+    jmeno=request.args.get("jméno")
+    heslo=request.args.get("heslo")
+    heslo2=request.args.get("heslo_znovu")
+    
+    if not (jmeno and heslo and heslo2):
+        flash('Je nutné vyplnit všechna políčka', 'error')
+        return redirect(url_for("registrace"))
+
+    if heslo != heslo2:
+        flash('Obě hesla musí být stejná', 'error')
+        return redirect(url_for("registrace"))
+    heslo_hash =generate_password_hash(heslo)
+    try:    
+        with SQLite('data.db') as cur:
+            cur.execute("INSERT INTO user (login,passwd) VALUES (?,?)", [jmeno,heslo_hash])
+        flash('Právě jsi se zaregistroval.', 'message')
+        flash('Jsi přihlášen....', 'message')
+        session['u6ivatel'] = jmeno
+        return redirect(url_for("index"))
+    except sqlite3.InstegrityError:
+        flash(f"Jméno {jmeno} již existuje. Vyberte jiné.", "error")
+
+    return redirect(url_for("registrace"))

@@ -22,9 +22,10 @@
 {%else%}
   Hrůza!!! Nejsi přihlášen, <a href="{{url_for('login') }}">Přihlas se!</a>
 {%endif%}
-
+<div>
 </p>
 {%for category,message in get_flashed_messages(with_categories=true)%}
+<div>class</div>>
 <p class="flash {{category}} ">
 <button id="hide">X</button>
  {{message}}
@@ -40,6 +41,7 @@
     <li><a href="{{ url_for('malina') }}">Malina</a></li>
     <li><a href="{{ url_for('login') }}">LOGIN</a></li>
     <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
+    <li><a href="{{ url_for('registrace') }}">Registrace</a></li>
   </ul></nav>
 
 

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{%block title%}Registrace{%endblock%}
+
+{% block obsah %}
+
+<h1>Registrace</h1>
+<p>Zde se můžeš zaregistrovat.</p>
+<form action="" method="post">
+jméno:<br>
+<input type="text" name="jméno"><br>
+heslo: <br>
+<input type="password" name="heslo"><br>
+heslo znovu: <br>
+<input type="password" name="heslo_znovu"><br>
+<br>
+<input type="submit" value="Registruj se!">
+</form>
+
+
+{% endblock obsah %}
