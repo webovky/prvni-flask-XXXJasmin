@@ -109,7 +109,7 @@ def registrace():
     return render_template("registrace.html")
 
 @app.route("/registrace/", methods=['POST'])
-def registrace():
+def registrace_post():
     jmeno=request.args.get("jméno")
     heslo=request.args.get("heslo")
     heslo2=request.args.get("heslo_znovu")
