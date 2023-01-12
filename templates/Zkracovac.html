@@ -3,12 +3,15 @@
 
 {% block obsah %}
 
-<h1>Zkracovač</h1>
+<h1>Zkracovač URL</h1>
+{% if new %}
+<p><a href="{{new}}">{{new}}</a></p>
+{% endif %}
 
 <h2>formulář</h2>
-<form action="" method="POST">
-    <p>URL ADRESA:<br>
-      <input type="text" name="zkracovac" placeholder="URL ADRESA" style="width:77%q
+<form method="POST">
+    URL ADRESA:<br>
+      <input type="text" name="url" placeholder="URL ADRESA" style="width:77%q
       ">
       <p><input type="submit" value="Udělej mi adresu!"></p>
     </p>

@@ -5,6 +5,7 @@ import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 import random
 import string
+import re
 
 
 from mysqlite import SQLite
@@ -39,17 +40,45 @@ def index():
 def info():
     return render_template("info.html")
 
-@app.route("/zkracovac/")
+@app.route("/zkracovac/", methods=["GET"])
 def zkracovac():
-    return render_template("Zkracovac.html")
+    new= request.args.get("new")
+    if "uživatel" in session:
+        with SQLite("data.db") as cur:
+            res=cur.execute("SELECT zkratka, adresa FROM adresy WHERE user=?", [session["uživatel"]])
+            zkratky= res.fetchall()
+    else:
+        zkratky=[]
+    return render_template("Zkracovac.html", new=new, zkratky=zkratky)
 
 @app.route("/zkracovac/" ,methods=["POST"])
 def zkracovac_post():
     url=request.form.get("url")
-    zkratka= ''.join(random.choices(string.ascii_uppercase +
+    if url and re.match("https?://.+", url):
+        zkratka= ''.join(random.choices(string.ascii_uppercase +
                              string.digits, k=5))
-    with SQLite('data.db') as cur:
-            cur.execute("INSERT INTO adresy (zkratka,adresa) VALUES (?,?)", [zkratka, url])
+        with SQLite('data.db') as cur:
+            if "uživatel" in session:
+                cur.execute("INSERT INTO adresy (zkratka,adresa) VALUES (?,?,?)", [zkratka, url, session["uživatel"]])
+            else:
+                cur.execute("INSERT INTO adresy (zkratka,adresa) VALUES (?,?)", [zkratka, url])
+        flash("Adresa uložena.")
+        return redirect(url_for("zkracovac", new=zkratka))
+    else:
+        flash("To, co jsi zadal není adresa webové stránky!")
+    return redirect(url_for("zkracovac"))
+
+@app.route("/zkracovac/<zkratka>", methods=["GET"])
+def dezkracovac(zkratka):
+    print(zkratka)
+    with SQLite("data.db") as cur:
+        res=cur.execute("SELECT adresa FROM adresy WHERE zkratka=?",  [zkratka])
+        odpoved=res.fetchone()
+        if odpoved:
+            print(odpoved[0])
+            return redirect(odpoved[0])
+        else:
+            flash("Toto [{}] není korektní zkratka", "error")
     return redirect(url_for("zkracovac"))
 
 @app.route("/abc/")
