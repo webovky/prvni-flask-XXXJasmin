@@ -47,6 +47,7 @@ def zkracovac():
         with SQLite("data.db") as cur:
             res=cur.execute("SELECT zkratka, adresa FROM adresy WHERE user=?", [session["uživatel"]])
             zkratky= res.fetchall()
+            if not zkratky:
     else:
         zkratky=[]
     return render_template("Zkracovac.html", new=new, zkratky=zkratky)
