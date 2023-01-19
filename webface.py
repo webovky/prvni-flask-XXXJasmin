@@ -48,6 +48,7 @@ def zkracovac():
             res=cur.execute("SELECT zkratka, adresa FROM adresy WHERE user=?", [session["uživatel"]])
             zkratky= res.fetchall()
             if not zkratky:
+                zkratky=[]
     else:
         zkratky=[]
     return render_template("Zkracovac.html", new=new, zkratky=zkratky)
@@ -60,7 +61,7 @@ def zkracovac_post():
                              string.digits, k=5))
         with SQLite('data.db') as cur:
             if "uživatel" in session:
-                cur.execute("INSERT INTO adresy (zkratka,adresa) VALUES (?,?,?)", [zkratka, url, session["uživatel"]])
+                cur.execute("INSERT INTO adresy (zkratka,adresa, user) VALUES (?,?,?)", [zkratka, url, session["uživatel"]])
             else:
                 cur.execute("INSERT INTO adresy (zkratka,adresa) VALUES (?,?)", [zkratka, url])
         flash("Adresa uložena.")
@@ -121,18 +122,18 @@ def login():
 
 @app.route("/login/", methods=["POST"])
 def login_post():
-    jmeno=request.form.get("jméno")
+    jmeno=request.form.get("jmeno")
     heslo=request.form.get("heslo")
     page = request.args.get('page')
 
     with SQLite('data.db') as cur:
         cur.execute('SELECT passwd FROM user WHERE login = ?', [jmeno])
-        ans= cur.fetchall()[0][0]
+        ans= cur.fetchall()
         print(ans)
 
-    if ans and ans[0][0] ==heslo:
+    if ans and check_password_hash( ans[0][0], heslo):
         flash('Jsi přihlášen!', 'message')
-        session["uzivatel"] = jmeno
+        session["uživatel"] = jmeno
         if page:
             return redirect(page)
     else:
@@ -154,10 +155,10 @@ def registrace():
 
 @app.route("/registrace/", methods=['POST'])
 def registrace_post():
-    jmeno=request.args.get("jméno")
-    heslo=request.args.get("heslo")
-    heslo2=request.args.get("heslo_znovu")
-    
+    jmeno=request.form.get("jmeno")
+    heslo=request.form.get("heslo")
+    heslo2=request.form.get("heslo2")
+    print(jmeno, heslo, heslo2)
     if not (jmeno and heslo and heslo2):
         flash('Je nutné vyplnit všechna políčka', 'error')
         return redirect(url_for("registrace"))
@@ -171,7 +172,7 @@ def registrace_post():
             cur.execute("INSERT INTO user (login,passwd) VALUES (?,?)", [jmeno,heslo_hash])
         flash('Právě jsi se zaregistroval.', 'message')
         flash('Jsi přihlášen....', 'message')
-        session['u6ivatel'] = jmeno
+        session['uživatel'] = jmeno
         return redirect(url_for("index"))
     except sqlite3.InstegrityError:
         flash(f"Jméno {jmeno} již existuje. Vyberte jiné.", "error")
